@@ -13,17 +13,21 @@ class Window(Frame):
         #Widget pakt volledige plek in
         self.pack(fill=BOTH,expand=1)
 
-        Label(self, text="Log-berichten server:").grid(row=0)
+        Label(self, text="Logs server:").pack()
         self.scrollbar = Scrollbar(self, orient=VERTICAL)
-        self.lstnumbers = Listbox(self, yscrollcommand=self.scrollbar.set)
-        self.scrollbar.config(command=self.lstnumbers.yview)
+        lstLogs = Listbox(self, yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=lstLogs.yview)
+        list_items = [11,22,33,44,22,33,44,22,33,44,22,33,44,22,33,44,22,33,44]
+        for item in list_items:
+            lstLogs.insert('end', item)
+        lstLogs.pack()
 
         
         #knop aanmaken
-        startButton = Button(self,text="start server", height=1, command=self.startServer)
-        stopButton = Button(self,text="stop server", height=1, command=self.stopServer )
-        startButton.place(x=0,y=128)
-        stopButton.place(x=0,y=160)
+        startButton = Button(self,text="Start server", height=1, command=self.startServer)
+        stopButton = Button(self,text="Stop server", height=1, command=self.stopServer )
+        startButton.pack()
+        stopButton.pack()
 
 
     def startServer(self):
