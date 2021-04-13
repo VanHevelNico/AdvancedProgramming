@@ -6,7 +6,7 @@ df = pd.read_csv('./data/database.csv')
 print(df)
 
 
-# Search between dates
+# Search between dates and between weight
 def between(unit,start,end):
     if unit == "date":
         result = df[df["Launch Date"].between(start,end)]
@@ -15,12 +15,17 @@ def between(unit,start,end):
 
     print(result)
 
+# search on specific customer
 def customer(customer_name):
     result = df[df['Customer Name']== customer_name]
     print(result)
 
-def plot():
+
+def plot_LauchYear():
         plt.show(sns.countplot(x='Launch Year', data=df))
+
+def plot_Customer():
+        plt.show(sns.countplot(y='Customer Name', data=df))
 
 
 # function between dates
@@ -32,5 +37,8 @@ def plot():
 # function on customer
 # customer("NASA")
 
-# make plot
-plot()
+# make plot of launchyears
+#plot_LaunchYear()
+
+# make plot of customers
+# plot_Customer()
