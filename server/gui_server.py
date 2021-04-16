@@ -10,6 +10,8 @@ from threading import Thread
 from tkinter import *
 
 from server.server import SommenServer
+from server.gui_registered_users import RegisteredWindow
+import pickle
 
 
 class ServerWindow(Frame):
@@ -33,20 +35,37 @@ class ServerWindow(Frame):
 
         Label(self, text="Log-berichten server:").grid(row=0)
         self.scrollbar = Scrollbar(self, orient=VERTICAL)
-        self.lstnumbers = Listbox(self, yscrollcommand=self.scrollbar.set)
-        self.scrollbar.config(command=self.lstnumbers.yview)
+        self.lstlogs = Listbox(self, yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.lstlogs.yview)
 
-        self.lstnumbers.grid(row=1, column=0, sticky=N + S + E + W)
+        self.lstlogs.grid(row=1, column=0, sticky=N + S + E + W)
         self.scrollbar.grid(row=1, column=1, sticky=N + S)
+
+        Label(self, text="Connected users:").grid(row=2)
+        self.scrollbar = Scrollbar(self, orient=VERTICAL)
+        self.lstconnected = Listbox(self, yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.lstconnected.yview)
+
+        self.lstconnected.grid(row=3, column=0, sticky=N + S + E + W)
+        self.scrollbar.grid(row=3, column=1, sticky=N + S)
 
         self.btn_text = StringVar()
         self.btn_text.set("Start server")
         self.buttonServer = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
-        self.buttonServer.grid(row=3, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+        self.buttonServer.grid(row=4, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
+        self.btn_text2 = StringVar()
+        self.btn_text2.set("Registered users")       
+        self.buttonRegistered = Button(self, textvariable=self.btn_text2, command=self.open_registered_users)
+        self.buttonRegistered.grid(row=5, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+        
         Grid.rowconfigure(self, 1, weight=1)
         Grid.columnconfigure(self, 0, weight=1)
 
+    def open_registered_users(self):
+        root = Tk()
+        root.geometry("400x400")
+        gui_server = RegisteredWindow(root)
 
     def start_stop_server(self):
         if self.server is not None:
@@ -55,6 +74,7 @@ class ServerWindow(Frame):
             self.__start_server()
 
     def __stop_server(self):
+        self.lstconnected.delete(0,END)
         self.server.stop_server()
         self.server = None
         logging.info("Server stopped")
@@ -75,8 +95,19 @@ class ServerWindow(Frame):
     def print_messsages_from_queue(self):
         message = self.messages_queue.get()
         while message != "CLOSE_SERVER":
-            self.lstnumbers.insert(END, message)
+            #Logs
+            self.lstlogs.insert(END, message)
             self.messages_queue.task_done()
             message = self.messages_queue.get()
+            #Online users
+            reader = open("./data/Gebruikers.txt",mode="rb")
+            self.lstconnected.delete(0,END)
+            users = pickle.load(reader)
+            for user in users:
+                if(user['isonline']==1):
+                    userString = "Name: " + user['name'] + "   Nickname: " + user['nickname'] + "   Email: " + user['email']
+                    self.lstconnected.insert(END,userString)
+                    self.lstconnected.insert(END,"                                          --------------------------------------------------                                          ")
+
 
 
