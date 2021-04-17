@@ -11,7 +11,6 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Combobox
 
-from data.Som import Som
 
 
 class Window(Frame):

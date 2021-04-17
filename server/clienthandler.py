@@ -3,10 +3,13 @@ from pathlib import Path
 sys.path[0] = str(Path(sys.path[0]).parent)
 
 import threading
-
 import pickle
 
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 
+df = pd.read_csv('database/database.csv')
 class ClientHandler(threading.Thread):
     numbers_clienthandlers = 0
 
@@ -21,7 +24,7 @@ class ClientHandler(threading.Thread):
         ClientHandler.numbers_clienthandlers += 1
 
     def run(self):
-        Gebruikers_path = "./data/Gebruikers.txt"
+        Gebruikers_path = "database/Gebruikers.txt"
         socket_to_client = self.socket_to_client.makefile(mode='rwb')
 
         self.print_bericht_gui_server("Waiting for numbers...")
@@ -54,6 +57,16 @@ class ClientHandler(threading.Thread):
 
                 commando = pickle.load(socket_to_client)
 
+            elif commando == "GET_BY_DATE":
+                s1 = pickle.load(socket_to_client)  # SOM-object
+
+                data = self.between("date",s1["start_date"], s1["end_date"])
+                pickle.dump(data, socket_to_client)
+                socket_to_client.flush()
+                commando = pickle.load(socket_to_client)
+
+            elif commando == "GET_BY_CLLIENT":
+                data = self.customer()    
 
         self.print_bericht_gui_server("Connection with client closed...")
         self.socket_to_client.close()
@@ -78,3 +91,16 @@ class ClientHandler(threading.Thread):
 
     def print_bericht_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")
+
+    def between(self,unit,start,end):
+        if unit == "date":
+            result = df[df["Launch Date"].between(start,end)]
+        elif unit == "weight":
+            result = df[df["Payload Mass (kg)"].between(start,end)]
+
+        return result
+
+    def customer(self,customer_name):
+        result = df[df['Customer Name']== customer_name]
+        return result
+
