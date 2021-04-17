@@ -1,6 +1,9 @@
+import os
 import sys
 from pathlib import Path
 sys.path[0] = str(Path(sys.path[0]).parent)
+folder = os.path.dirname(os.path.abspath(__file__))
+gebruikers_file = os.path.join(folder,'database/Gebruikers.txt')
 
 # https://pythonprogramming.net/python-3-tkinter-basics-tutorial/
 import logging
@@ -99,8 +102,9 @@ class ServerWindow(Frame):
             self.lstlogs.insert(END, message)
             self.messages_queue.task_done()
             message = self.messages_queue.get()
+
             #Online users
-            reader = open("database/Gebruikers.txt",mode="rb")
+            reader = open(gebruikers_file,mode="rb")
             self.lstconnected.delete(0,END)
             users = pickle.load(reader)
             for user in users:

@@ -2,12 +2,22 @@ import sys
 from pathlib import Path
 sys.path[0] = str(Path(sys.path[0]).parent)
 
+import os
+sys.path[0] = str(Path(sys.path[0]).parent)
+folder = os.path.dirname(os.path.abspath(__file__))
+gebruikers_file = os.path.join(folder,'database/Gebruikers.txt')
+
 import threading
 import pickle
 
+<<<<<<< HEAD
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+=======
+from server.klassen.Persoon import Persoon
+
+>>>>>>> develop
 
 df = pd.read_csv('database/database.csv')
 class ClientHandler(threading.Thread):
@@ -40,20 +50,71 @@ class ClientHandler(threading.Thread):
 
                 commando = pickle.load(socket_to_client)
 
-            elif commando == "REGISTREREN":
+            elif commando == "INLOGGEN":
+                same = False
                 gegevens = pickle.load(socket_to_client)
-                read_obj = open(Gebruikers_path, mode="rb")
+                gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
+                # Gebruikersfile inlezen
+                read_obj = open(gebruikers_file, mode="rb")
                 gebruikers = pickle.load(read_obj)
-                new_id = {"id":len(gebruikers) + 1}
+
+                # Controleren of gegevens al eens voorkomen in de dict via objecten
+                for gebruiker in gebruikers:
+                    gebruiker_obj = Persoon(gebruiker['name'],gebruiker['nickname'],gebruiker['email'])
+                    print(gebruiker)
+
+                    if (gebruiker_obj == gegevens_obj) == True:
+                        same = True
+                        print("same")
+                if same:
+                    pickle.dump("OK", socket_to_client)
+                    socket_to_client.flush()
+                else:
+                    pickle.dump("NOK", socket_to_client)
+                    socket_to_client.flush()
+
+                commando = pickle.load(socket_to_client)
+
+            
+
+
+            elif commando == "REGISTREREN":
+                same = False
+                gegevens = pickle.load(socket_to_client)
                 print(gegevens)
-                print(new_id)
-                gegevens["id"] = len(gebruikers) + 1
-                gegevens = {**new_id,**gegevens}
-                print(gegevens)
-                # gebruikers.append(gegevens)
-                # write_obj = open(Gebruikers_path, mode="wb")
-                # pickle.dump(gebruikers, write_obj)
-                # write_obj.close()
+                gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
+                # Gebruikersfile inlezen
+                read_obj = open(gebruikers_file, mode="rb")
+                gebruikers = pickle.load(read_obj)
+
+                # Controleren of gegevens al eens voorkomen in de dict via objecten
+                for gebruiker in gebruikers:
+                    gebruiker_obj = Persoon(gebruiker['name'],gebruiker['nickname'],gebruiker['email'])
+                    print(gebruiker)
+
+                    if (gebruiker_obj == gegevens_obj) == True:
+                        same = True
+                        print("same")
+                if same:
+                    pickle.dump("Een account  met deze gegevens bestaat al", socket_to_client)
+                    socket_to_client.flush()
+
+                else:
+
+                    # Id toeveogen aan nieuwe
+                    new_id = {"id":len(gebruikers) + 1}
+                    gegevens = {**new_id,**gegevens}
+
+                    # Nieuwe gebruiker toeveoegen aan de dict
+                    gebruikers.append(gegevens)
+
+                    #schrijven naar bestand
+                    write_obj = open(gebruikers_file, mode="wb")
+                    pickle.dump(gebruikers, write_obj)
+                    write_obj.close()
+
+                    pickle.dump("Uw account werd aangemaakt", socket_to_client)
+                    socket_to_client.flush()
 
                 commando = pickle.load(socket_to_client)
 

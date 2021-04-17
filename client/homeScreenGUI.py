@@ -10,8 +10,8 @@ sys.path[0] = str(Path(sys.path[0]).parent)
 import logging
 import socket
 import pickle
+import re
 
-from data.Registreren import Registreren
 
 class HomeScreenWindow(Frame):
     def __init__(self, master=None):
@@ -36,7 +36,7 @@ class HomeScreenWindow(Frame):
         self.entry_email = Entry(self, width=40)
         self.entry_email.grid(row=5)
 
-        self.buttonLogin = Button(self, text="Login", command=lambda: self.buttonInloggen(root))
+        self.buttonLogin = Button(self, text="Login",command=self.buttonInloggen)
         self.buttonLogin.grid(row=6, pady=(20, 10), padx=(5, 5), sticky=N + S + E + W)
 
         self.buttonRegister = Button(self, text="Registeren", command=self.buttonRegistreren)
@@ -69,28 +69,77 @@ class HomeScreenWindow(Frame):
             messagebox.showinfo("Stopafstand - foutmelding", "Something has gone wrong...")
 
     def buttonInloggen(self):
-        print("inloggen")
+        try:
+            print("inloggen")
+
+            # Errorbox leegmaken
+            self.errorLabel['text'] = ""
+
+            # Server laten weten dat het om een login gaat
+            pickle.dump("INLOGGEN", self.in_out_server)
+
+            # Ingegeven waarden opslaan
+            naam = str(self.entry_name.get())
+            nickname = str(self.entry_nickname.get())
+            email = str(self.entry_email.get())
+
+            entry = {"name":naam, "nickname":nickname, "email":email, "isonline": 0}
+
+            # Deze dictionary naar de server
+            pickle.dump(entry, self.in_out_server)
+            self.in_out_server.flush()
+                    
+            # resultaat afwachten
+            code = pickle.load(self.in_out_server)
+            if code == "OK":
+                print("Ingelogd")
+            elif code == "NOK":
+                self.errorLabel['text'] = "Er is geen account gevonden met deze inloggegevens"
+            
+
+        except Exception as ex:
+            logging.error(f"Foutmelding: {ex}")
+            messagebox.showinfo("Inloggen", "Something has gone wrong...")
 
     def buttonRegistreren(self):
         try:
             print("registreren")
+
+            # Errorbox leegmaken
+            self.errorLabel['text'] = ""
+
+            # Server laten weten dat het om een registratie gaat
             pickle.dump("REGISTREREN", self.in_out_server)
 
+            # Ingegeven waarden opslaan
             naam = str(self.entry_name.get())
             nickname = str(self.entry_nickname.get())
             email = str(self.entry_email.get())
-    
-            entry = {"name":naam, "nickname":nickname, "email":email, "isonline": 0}
-            pickle.dump(entry, self.in_out_server)
-            self.in_out_server.flush()
-            
-            # # resultaat afwachten
-            # r1 = pickle.load(self.in_out_server)
-            # self.label_resultaat['text'] = "{0}".format(s1.som)
+
+            # regex van een email
+            regex = '^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
+
+            # Checken of ingegeven woorden voldoen aan de eisen
+            if any(not c.isalpha() for c in naam):
+                self.errorLabel['text'] = "De ingegeven naam bevat speciale tekens"
+            else:
+                if (re.search(regex, email)):
+                    # Dictionary maken van de ingegeven waarden
+                    entry = {"name":naam, "nickname":nickname, "email":email, "isonline": 0}
+
+                    # Deze dictionary naar de server
+                    pickle.dump(entry, self.in_out_server)
+                    self.in_out_server.flush()
+                    
+                    # resultaat afwachten
+                    code = pickle.load(self.in_out_server)
+                    self.errorLabel['text'] = code
+                else:
+                    self.errorLabel['text'] = "Het ingegeven e-mailadres is ongeldig"
 
         except Exception as ex:
             logging.error(f"Foutmelding: {ex}")
-            messagebox.showinfo("Sommen", "Something has gone wrong...")
+            messagebox.showinfo("Registreren", "Something has gone wrong...")
 
     def close_connection(self):
         try:
