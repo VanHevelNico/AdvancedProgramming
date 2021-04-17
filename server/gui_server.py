@@ -100,7 +100,7 @@ class ServerWindow(Frame):
             self.messages_queue.task_done()
             message = self.messages_queue.get()
             #Online users
-            reader = open("./data/Gebruikers.txt",mode="rb")
+            reader = open("database/Gebruikers.txt",mode="rb")
             self.lstconnected.delete(0,END)
             users = pickle.load(reader)
             for user in users:

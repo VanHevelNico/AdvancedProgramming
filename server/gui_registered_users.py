@@ -33,7 +33,7 @@ class RegisteredWindow(Frame):
         Grid.rowconfigure(self, 1, weight=1)
         Grid.columnconfigure(self, 0, weight=1)
         
-        reader = open("./data/Gebruikers.txt",mode="rb")
+        reader = open("database/Gebruikers.txt",mode="rb")
         self.lstRegistered.delete(0,END)
         users = pickle.load(reader)
         for user in users:
