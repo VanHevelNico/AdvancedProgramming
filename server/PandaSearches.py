@@ -2,7 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('./data/database.csv')
+df = pd.read_csv('database.csv')
 print(df)
 
 
@@ -32,13 +32,13 @@ def plot_Customer():
 # between("date","2010-01-01", "2011-01-01")
 
 # function between mass
-#between("weight",7, 501)
+# between("weight",7, 501)
 
 # function on customer
 # customer("NASA")
 
 # make plot of launchyears
-#plot_LaunchYear()
+# plot_LauchYear()
 
 # make plot of customers
-# plot_Customer()
+plot_Customer()
