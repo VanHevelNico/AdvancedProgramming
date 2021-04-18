@@ -6,20 +6,18 @@ import os
 sys.path[0] = str(Path(sys.path[0]).parent)
 folder = os.path.dirname(os.path.abspath(__file__))
 gebruikers_file = os.path.join(folder,'database/Gebruikers.txt')
+zoekopdrachten_file = os.path.join(folder,'database/zoekopdrachten.txt')
 
 import threading
 import pickle
 
-<<<<<<< HEAD
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-=======
 from server.klassen.Persoon import Persoon
 
->>>>>>> develop
-
 df = pd.read_csv('database/database.csv')
+
 class ClientHandler(threading.Thread):
     numbers_clienthandlers = 0
 
@@ -125,12 +123,25 @@ class ClientHandler(threading.Thread):
                 pickle.dump(data, socket_to_client)
                 socket_to_client.flush()
                 commando = pickle.load(socket_to_client)
+                saveSearches(commando)
 
             elif commando == "GET_BY_CLLIENT":
                 data = self.customer()    
 
         self.print_bericht_gui_server("Connection with client closed...")
         self.socket_to_client.close()
+
+    def saveSearches(self, com):
+        gegevens_obj = com
+        reader = open(zoekopdrachten_file, mode="rb")
+        zoekopdrachten = pickle.load(reader)
+        print(zoekopdrachten)
+        # Nieuwe gebruiker toeveoegen aan de dict
+        zoekopdrachten.append(gegevens_obj)
+        #schrijven naar bestand
+        write_obj = open(gebruikers_file, mode="wb")
+        pickle.dump(zoekopdrachten, write_obj)
+        write_obj.close()
 
     # def run(self):
     #     socket_to_client = self.socket_to_client.makefile(mode='rwb')
