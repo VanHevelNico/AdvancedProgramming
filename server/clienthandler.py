@@ -32,6 +32,22 @@ class ClientHandler(threading.Thread):
         self.id = ClientHandler.numbers_clienthandlers
         ClientHandler.numbers_clienthandlers += 1
 
+    def WriteToFile(self, data, file):
+        write_obj = open(file, mode="wb")
+        pickle.dump(data, write_obj)
+        write_obj.close()        
+    
+        # gegevens_obj = com
+        # reader = open(zoekopdrachten_file, mode="rb")
+        # zoekopdrachten = pickle.load(reader)
+        # print(zoekopdrachten)
+        # # Nieuwe gebruiker toeveoegen aan de dict
+        # zoekopdrachten.append(gegevens_obj)
+        # #schrijven naar bestand
+        # write_obj = open(gebruikers_file, mode="wb")
+        # pickle.dump(zoekopdrachten, write_obj)
+        # write_obj.close()    
+
     def run(self):
 
         same = False
@@ -51,44 +67,59 @@ class ClientHandler(threading.Thread):
                 commando = pickle.load(socket_to_client)
 
             elif commando == "INLOGGEN":
+                # Boolean om te controleren of objecten gelrijk zijn
                 same = False
+
+                # De doorgestuurde gegevens van client inlezen
                 gegevens = pickle.load(socket_to_client)
+
+                #Object maken van persoonsklasse voor in te loggen client
                 gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
+
                 # Gebruikersfile inlezen
                 read_obj = open(gebruikers_file, mode="rb")
+                # Gebruikers opslaan
                 gebruikers = pickle.load(read_obj)
 
                 # Controleren of gegevens al eens voorkomen in de dict via objecten
                 for gebruiker in gebruikers:
+                    #Object maken van persoonsklasse voor gebruiker
                     gebruiker_obj = Persoon(gebruiker['name'],gebruiker['nickname'],gebruiker['email'])
-
                     if (gebruiker_obj == gegevens_obj) == True:
                         same = True
+                        # Indien er een overeenkomst is
                         if same == True:
-                            print("same")
+                            # Stuur OK naar client
                             pickle.dump("OK", socket_to_client)
-                            gebruiker['isonline'] = 1
-
                             socket_to_client.flush()
+
+                            # Noteren dat de gebruiker online is
+                            gebruiker['isonline'] = 1
                         else:
+                            # NOK sturen naar client
                             pickle.dump("NOK", socket_to_client)
-                            print("NOK")
                             socket_to_client.flush()
 
                 #schrijven naar bestand
+                
                 write_obj = open(gebruikers_file, mode="wb")
                 pickle.dump(gebruikers, write_obj)
                 write_obj.close()
-                print("------------------------- login ------------------------- \n"+ str(gebruikers)+"\n\n\n\n\n")
 
+                # Commando resetten
                 commando = pickle.load(socket_to_client)
 
 
             elif commando == "REGISTREREN":
+                # Boolean om te controleren of objecten gelrijk zijn
                 same = False
+
+                # De doorgestuurde gegevens van client inlezen
                 gegevens = pickle.load(socket_to_client)
-                print("gegevens" + str(gegevens))
+
+                #Object maken van persoonsklasse voor in te loggen client
                 gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
+
                 # Gebruikersfile inlezen
                 read_obj = open(gebruikers_file, mode="rb")
                 gebruikers = pickle.load(read_obj)
@@ -96,17 +127,15 @@ class ClientHandler(threading.Thread):
                 # Controleren of gegevens al eens voorkomen in de dict via objecten
                 for gebruiker in gebruikers:
                     gebruiker_obj = Persoon(gebruiker['name'],gebruiker['nickname'],gebruiker['email'])
-                    print(gebruiker)
-
                     if (gebruiker_obj == gegevens_obj) == True:
                         same = True
-                        print("same")
+                # Indien er al een account bestaat -> "Er is een account gevonden" naar client sturen
                 if same:
                     pickle.dump("Een account  met deze gegevens bestaat al", socket_to_client)
                     socket_to_client.flush()
 
+                # Anders nieuwe gebruiker toeveoegen
                 else:
-
                     # Id toeveogen aan nieuwe
                     new_id = {"id":len(gebruikers) + 1}
                     gegevens = {**new_id,**gegevens}
@@ -115,10 +144,9 @@ class ClientHandler(threading.Thread):
                     gebruikers.append(gegevens)
 
                     #schrijven naar bestand
-                    write_obj = open(gebruikers_file, mode="wb")
-                    pickle.dump(gebruikers, write_obj)
-                    write_obj.close()
+                    WriteToFile(gebruikers,gebruikers_file)
 
+                    # Berichtt sturen naar client dat de gebruiker is geregistreerd
                     pickle.dump("Uw account werd aangemaakt", socket_to_client)
                     socket_to_client.flush()
 
@@ -131,7 +159,7 @@ class ClientHandler(threading.Thread):
                 pickle.dump(data, socket_to_client)
                 socket_to_client.flush()
                 commando = pickle.load(socket_to_client)
-                saveSearches(commando)
+                # saveSearches(commando)
 
             elif commando == "GET_BY_CLLIENT":
                 data = self.customer()    
@@ -157,27 +185,14 @@ class ClientHandler(threading.Thread):
                         gebruiker["isonline"] = 0
 
             #schrijven naar bestand
-            write_obj = open(gebruikers_file, mode="wb")
-            pickle.dump(gebruikers, write_obj)
-            write_obj.close()
+            WriteToFile(gebruikers,gebruikers_file)
+
             print("------------------------- logout ------------------------- \n"+ str(gebruikers))
         
         # connectie sluiten
         self.print_bericht_gui_server("Connection with client closed...")
         pickle.dump("CLOSE", socket_to_client)
         self.socket_to_client.close()
-
-    def saveSearches(self, com):
-        gegevens_obj = com
-        reader = open(zoekopdrachten_file, mode="rb")
-        zoekopdrachten = pickle.load(reader)
-        print(zoekopdrachten)
-        # Nieuwe gebruiker toeveoegen aan de dict
-        zoekopdrachten.append(gegevens_obj)
-        #schrijven naar bestand
-        write_obj = open(gebruikers_file, mode="wb")
-        pickle.dump(zoekopdrachten, write_obj)
-        write_obj.close()
 
     # def run(self):
     #     socket_to_client = self.socket_to_client.makefile(mode='rwb')
