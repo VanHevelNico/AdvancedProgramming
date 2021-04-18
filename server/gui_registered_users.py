@@ -7,6 +7,11 @@ import logging
 from tkinter import *
 import pickle
 
+import os
+sys.path[0] = str(Path(sys.path[0]).parent)
+folder = os.path.dirname(os.path.abspath(__file__))
+gebruikers_file = os.path.join(folder,'database/Gebruikers.txt')
+
 
 class RegisteredWindow(Frame):
     def __init__(self, master=None):
@@ -33,7 +38,7 @@ class RegisteredWindow(Frame):
         Grid.rowconfigure(self, 1, weight=1)
         Grid.columnconfigure(self, 0, weight=1)
         
-        reader = open("database/Gebruikers.txt",mode="rb")
+        reader = open(gebruikers_file,mode="rb")
         self.lstRegistered.delete(0,END)
         users = pickle.load(reader)
         for user in users:

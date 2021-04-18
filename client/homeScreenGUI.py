@@ -12,7 +12,7 @@ import socket
 import pickle
 import re
 
-
+login = {}
 class HomeScreenWindow(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)               
@@ -50,6 +50,7 @@ class HomeScreenWindow(Frame):
         Grid.columnconfigure(self, 1, weight=1)
 
     def __del__(self):
+        print("CloseConnection aanroepen")
         self.close_connection()
 
     def makeConnnectionWithServer(self):
@@ -69,6 +70,7 @@ class HomeScreenWindow(Frame):
             messagebox.showinfo("Stopafstand - foutmelding", "Something has gone wrong...")
 
     def buttonInloggen(self):
+        global login
         try:
             print("inloggen")
 
@@ -91,8 +93,10 @@ class HomeScreenWindow(Frame):
                     
             # resultaat afwachten
             code = pickle.load(self.in_out_server)
+            print(code)
             if code == "OK":
                 print("Ingelogd")
+                login = entry
             elif code == "NOK":
                 self.errorLabel['text'] = "Er is geen account gevonden met deze inloggegevens"
             
@@ -108,9 +112,6 @@ class HomeScreenWindow(Frame):
             # Errorbox leegmaken
             self.errorLabel['text'] = ""
 
-            # Server laten weten dat het om een registratie gaat
-            pickle.dump("REGISTREREN", self.in_out_server)
-
             # Ingegeven waarden opslaan
             naam = str(self.entry_name.get())
             nickname = str(self.entry_nickname.get())
@@ -124,6 +125,10 @@ class HomeScreenWindow(Frame):
                 self.errorLabel['text'] = "De ingegeven naam bevat speciale tekens"
             else:
                 if (re.search(regex, email)):
+
+                    # Server laten weten dat het om een registratie gaat
+                    pickle.dump("REGISTREREN", self.in_out_server)
+
                     # Dictionary maken van de ingegeven waarden
                     entry = {"name":naam, "nickname":nickname, "email":email, "isonline": 0}
 
@@ -142,11 +147,21 @@ class HomeScreenWindow(Frame):
             messagebox.showinfo("Registreren", "Something has gone wrong...")
 
     def close_connection(self):
+        global login
         try:
-            logging.info("Close connection with server...")
             pickle.dump("CLOSE", self.in_out_server)
-            self.in_out_server.flush()
-            self.socket_to_server.close()
+            if len(login)==0:
+                pickle.dump("NOLOGIN", self.in_out_server)
+                self.in_out_server.flush()
+                logging.info("Close connection with server...")
+                self.socket_to_server.close()
+            else:
+                pickle.dump(login, self.in_out_server)
+                self.in_out_server.flush()
+                response = pickle.load(self.in_out_server)
+                if response == "CLOSE":
+                    logging.info("Close connection with server...")
+                    self.socket_to_server.close()     
         except Exception as ex:
             logging.error("Foutmelding:close connection with server failed")
 
