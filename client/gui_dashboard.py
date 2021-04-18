@@ -42,8 +42,8 @@ class Dashboard(Frame):
         self.lstOutput = Listbox(self, yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.lstOutput.yview)
 
-        self.lstOutput.grid(row=6, column=0, sticky=N + S + E + W)
-        self.scrollbar.grid(row=6, column=1, sticky=N + S)             
+        self.lstOutput.grid(row=6, column=0, columnspan=2,  sticky=N + S + E + W)
+        self.scrollbar.grid(row=6, column=0, sticky=N + S)             
 
         Grid.rowconfigure(self, 10, weight=1)
         Grid.columnconfigure(self, 1, weight=1)
@@ -65,10 +65,11 @@ class Dashboard(Frame):
             print(result)
             teller = 0
             value = ""
-            result['Flight Number']
-            count = result.keys()
+            count = result['Flight Number']
+            count = count.keys()
             count = list(count)
             count = len(count)
+            count = count 
             for teller in range(count):
                 teller2 = teller +1
                 value += "Flight " + str(teller2) + ": \n"

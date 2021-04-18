@@ -7,6 +7,7 @@ sys.path[0] = str(Path(sys.path[0]).parent)
 folder = os.path.dirname(os.path.abspath(__file__))
 gebruikers_file = os.path.join(folder,'database/Gebruikers.txt')
 database_file = os.path.join(folder,'database/database.csv')
+zoekopdrachten_file = os.path.join(folder,'database/zoekopdrachten.txt')
 
 import threading
 import pickle
@@ -130,6 +131,7 @@ class ClientHandler(threading.Thread):
                 pickle.dump(data, socket_to_client)
                 socket_to_client.flush()
                 commando = pickle.load(socket_to_client)
+                saveSearches(commando)
 
             elif commando == "GET_BY_CLLIENT":
                 data = self.customer()    
@@ -164,6 +166,18 @@ class ClientHandler(threading.Thread):
         self.print_bericht_gui_server("Connection with client closed...")
         pickle.dump("CLOSE", socket_to_client)
         self.socket_to_client.close()
+
+    def saveSearches(self, com):
+        gegevens_obj = com
+        reader = open(zoekopdrachten_file, mode="rb")
+        zoekopdrachten = pickle.load(reader)
+        print(zoekopdrachten)
+        # Nieuwe gebruiker toeveoegen aan de dict
+        zoekopdrachten.append(gegevens_obj)
+        #schrijven naar bestand
+        write_obj = open(gebruikers_file, mode="wb")
+        pickle.dump(zoekopdrachten, write_obj)
+        write_obj.close()
 
     # def run(self):
     #     socket_to_client = self.socket_to_client.makefile(mode='rwb')
