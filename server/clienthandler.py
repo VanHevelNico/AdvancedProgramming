@@ -73,9 +73,6 @@ class ClientHandler(threading.Thread):
 
                 commando = pickle.load(socket_to_client)
 
-            
-
-
             elif commando == "REGISTREREN":
                 same = False
                 gegevens = pickle.load(socket_to_client)
@@ -125,8 +122,29 @@ class ClientHandler(threading.Thread):
                 commando = pickle.load(socket_to_client)
                 saveSearches(commando)
 
-            elif commando == "GET_BY_CLLIENT":
-                data = self.customer()    
+            elif commando == "FILL_COMBOBOX":
+                data = df["Customer Name"].unique()
+                pickle.dump(data, socket_to_client)
+                socket_to_client.flush()
+                commando = pickle.load(socket_to_client)
+
+            elif commando == "GET_BY_CUSTOMER":
+                customer_name = pickle.load(socket_to_client) 
+                print(customer_name)
+                customer_name = customer_name["customer"]
+                print(customer_name)
+                result = df[df['Customer Name']== customer_name]
+                pickle.dump(result, socket_to_client)
+                socket_to_client.flush()
+                commando = pickle.load(socket_to_client)
+
+            elif commando == "GET_GRAPH":
+                launch_year = df
+                result = launch_year.to_dict()
+                pickle.dump(result, socket_to_client)
+                socket_to_client.flush()
+                commando = pickle.load(socket_to_client)
+
 
         self.print_bericht_gui_server("Connection with client closed...")
         self.socket_to_client.close()

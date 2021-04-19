@@ -1,7 +1,9 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+import tkinter
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+ 
 df = pd.read_csv('database.csv')
 print(df)
 
@@ -27,18 +29,19 @@ def plot_LauchYear():
 def plot_Customer():
         plt.show(sns.countplot(y='Customer Name', data=df))
 
-
+#customerlist = df["Customer Name"].unique()
+#print(customerlist)
 # function between dates
-between("date","2010-01-01", "2011-01-01")
+#between("date","2010-01-01", "2011-01-01")
 
 # function between mass
 # between("weight",7, 501)
 
 # function on customer
-# customer("NASA")
+#customer("NASA")
 
 # make plot of launchyears
-# plot_LauchYear()
+plot_LauchYear()
 
 # make plot of customers
 #plot_Customer()
