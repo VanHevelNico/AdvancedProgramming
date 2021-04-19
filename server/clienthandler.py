@@ -96,6 +96,8 @@ class ClientHandler(threading.Thread):
                 # Commando resetten
                 commando = pickle.load(socket_to_client)
 
+            
+
 
             elif commando == "REGISTREREN":
                 # Boolean om te controleren of objecten gelrijk zijn
@@ -159,8 +161,29 @@ class ClientHandler(threading.Thread):
 
                 commando = pickle.load(socket_to_client)
 
-            elif commando == "GET_BY_CLLIENT":
-                data = self.customer()    
+            elif commando == "FILL_COMBOBOX":
+                data = df["Customer Name"].unique()
+                pickle.dump(data, socket_to_client)
+                socket_to_client.flush()
+                commando = pickle.load(socket_to_client)
+
+            elif commando == "GET_BY_CUSTOMER":
+                customer_name = pickle.load(socket_to_client) 
+                print(customer_name)
+                customer_name = customer_name["customer"]
+                print(customer_name)
+                result = df[df['Customer Name']== customer_name]
+                pickle.dump(result, socket_to_client)
+                socket_to_client.flush()
+                commando = pickle.load(socket_to_client)
+
+            elif commando == "GET_GRAPH":
+                launch_year = df
+                result = launch_year.to_dict()
+                pickle.dump(result, socket_to_client)
+                socket_to_client.flush()
+                commando = pickle.load(socket_to_client)
+
 
         # Ggevens opvangen
         login = pickle.load(socket_to_client)
