@@ -48,6 +48,10 @@ class Dashboard(Frame):
         Grid.rowconfigure(self, 10, weight=1)
         Grid.columnconfigure(self, 1, weight=1)
 
+    def __del__(self):
+        print("CloseConnection aanroepen")
+        self.close_connection()
+
     def orderedByDate(self):
         try:
             pickle.dump("GET_BY_DATE", self.in_out_server)
@@ -102,6 +106,25 @@ class Dashboard(Frame):
         except Exception as ex:
             logging.error(f"Foutmelding: {ex}")
             messagebox.showinfo("Stopafstand - foutmelding", "Something has gone wrong...")
+
+    def close_connection(self):
+        global login
+        try:
+            pickle.dump("CLOSE", self.in_out_server)
+            if len(login)==0:
+                pickle.dump("NOLOGIN", self.in_out_server)
+                self.in_out_server.flush()
+                logging.info("Close connection with server...")
+                self.socket_to_server.close()
+            else:
+                pickle.dump(login, self.in_out_server)
+                self.in_out_server.flush()
+                response = pickle.load(self.in_out_server)
+                if response == "CLOSE":
+                    logging.info("Close connection with server...")
+                    self.socket_to_server.close()     
+        except Exception as ex:
+            logging.error("Foutmelding:close connection with server failed")
 
 logging.basicConfig(level=logging.INFO)
 

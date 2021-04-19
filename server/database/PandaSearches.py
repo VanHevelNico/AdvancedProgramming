@@ -2,7 +2,15 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('database.csv')
+import sys
+from pathlib import Path
+sys.path[0] = str(Path(sys.path[0]).parent)
+
+import os
+folder = os.path.dirname(os.path.abspath(__file__))
+database_file = os.path.join(folder,'database.csv')
+
+df = pd.read_csv(database_file)
 print(df)
 
 

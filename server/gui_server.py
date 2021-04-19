@@ -44,23 +44,43 @@ class ServerWindow(Frame):
         self.lstlogs.grid(row=1, column=0, sticky=N + S + E + W)
         self.scrollbar.grid(row=1, column=1, sticky=N + S)
 
-        Label(self, text="Connected users:").grid(row=2)
+        # Label(self, text="Connected users:").grid(row=2)
+
+        self.btn_text = StringVar()
+        self.btn_text.set("Connected users")
+        self.buttonConnected = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
+        self.buttonConnected.grid(row=3, column=0, sticky=W)
+        # self.buttonConnected.pack(fill=)
+
+        self.btn_text = StringVar()
+        self.btn_text.set("All searches")
+        self.buttonSearches = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
+        self.buttonSearches.grid(row=3, column=0)
+
+        self.btn_text = StringVar()
+        self.btn_text.set("Popular searches")
+        self.buttonPopular = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
+        self.buttonPopular.grid(row=3, column=0, sticky=E)
+
+        #, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W
+
+        
         self.scrollbar = Scrollbar(self, orient=VERTICAL)
         self.lstconnected = Listbox(self, yscrollcommand=self.scrollbar.set)
         self.scrollbar.config(command=self.lstconnected.yview)
 
-        self.lstconnected.grid(row=3, column=0, sticky=N + S + E + W)
-        self.scrollbar.grid(row=3, column=1, sticky=N + S)
+        self.lstconnected.grid(row=4, column=0, sticky=N + S + E + W)
+        self.scrollbar.grid(row=4, column=1, sticky=N + S)
 
         self.btn_text = StringVar()
         self.btn_text.set("Start server")
         self.buttonServer = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
-        self.buttonServer.grid(row=4, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+        self.buttonServer.grid(row=5, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
 
         self.btn_text2 = StringVar()
         self.btn_text2.set("Registered users")       
         self.buttonRegistered = Button(self, textvariable=self.btn_text2, command=self.open_registered_users)
-        self.buttonRegistered.grid(row=5, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
+        self.buttonRegistered.grid(row=6, column=0, columnspan=2, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W)
         
         Grid.rowconfigure(self, 1, weight=1)
         Grid.columnconfigure(self, 0, weight=1)

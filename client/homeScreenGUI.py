@@ -11,6 +11,10 @@ import logging
 import socket
 import pickle
 import re
+import os
+sys.path[0] = str(Path(sys.path[0]).parent)
+folder = os.path.dirname(os.path.abspath(__file__))
+dashboard_script = os.path.join(folder,'gui_dashboard.py')
 
 login = {}
 class HomeScreenWindow(Frame):
@@ -97,6 +101,7 @@ class HomeScreenWindow(Frame):
             if code == "OK":
                 print("Ingelogd")
                 login = entry
+                os.system(f'python {dashboard_script}')
             elif code == "NOK":
                 self.errorLabel['text'] = "Er is geen account gevonden met deze inloggegevens"
             

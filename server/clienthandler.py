@@ -5,7 +5,7 @@ sys.path[0] = str(Path(sys.path[0]).parent)
 import os
 sys.path[0] = str(Path(sys.path[0]).parent)
 folder = os.path.dirname(os.path.abspath(__file__))
-gebruikers_file = os.path.join(folder,'database/Gebruikers.txt')
+gebruikers_file = os.path.join(folder,'database/gebruikers.txt')
 database_file = os.path.join(folder,'database/database.csv')
 zoekopdrachten_file = os.path.join(folder,'database/zoekopdrachten.txt')
 
@@ -30,25 +30,17 @@ class ClientHandler(threading.Thread):
         self.messages_queue = messages_queue
         # id clienthandler
         self.id = ClientHandler.numbers_clienthandlers
-        ClientHandler.numbers_clienthandlers += 1
-
-    def WriteToFile(self, data, file):
-        write_obj = open(file, mode="wb")
-        pickle.dump(data, write_obj)
-        write_obj.close()        
-    
-        # gegevens_obj = com
-        # reader = open(zoekopdrachten_file, mode="rb")
-        # zoekopdrachten = pickle.load(reader)
-        # print(zoekopdrachten)
-        # # Nieuwe gebruiker toeveoegen aan de dict
-        # zoekopdrachten.append(gegevens_obj)
-        # #schrijven naar bestand
-        # write_obj = open(gebruikers_file, mode="wb")
-        # pickle.dump(zoekopdrachten, write_obj)
-        # write_obj.close()    
+        ClientHandler.numbers_clienthandlers += 1  
 
     def run(self):
+        def WriteToFile(data, file):
+            write_obj = open(file, mode="wb")
+            pickle.dump(data, write_obj)
+            write_obj.close()
+        
+        def ReadFromFile(file):
+            read_obj = open(file, mode="rb")
+            return pickle.load(read_obj)
 
         same = False
         socket_to_client = self.socket_to_client.makefile(mode='rwb')
@@ -77,9 +69,7 @@ class ClientHandler(threading.Thread):
                 gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
 
                 # Gebruikersfile inlezen
-                read_obj = open(gebruikers_file, mode="rb")
-                # Gebruikers opslaan
-                gebruikers = pickle.load(read_obj)
+                gebruikers = ReadFromFile(gebruikers_file)
 
                 # Controleren of gegevens al eens voorkomen in de dict via objecten
                 for gebruiker in gebruikers:
@@ -101,10 +91,7 @@ class ClientHandler(threading.Thread):
                             socket_to_client.flush()
 
                 #schrijven naar bestand
-                
-                write_obj = open(gebruikers_file, mode="wb")
-                pickle.dump(gebruikers, write_obj)
-                write_obj.close()
+                WriteToFile(gebruikers, gebruikers_file)
 
                 # Commando resetten
                 commando = pickle.load(socket_to_client)
@@ -121,8 +108,7 @@ class ClientHandler(threading.Thread):
                 gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
 
                 # Gebruikersfile inlezen
-                read_obj = open(gebruikers_file, mode="rb")
-                gebruikers = pickle.load(read_obj)
+                gebruikers = ReadFromFile(gebruikers_file)
 
                 # Controleren of gegevens al eens voorkomen in de dict via objecten
                 for gebruiker in gebruikers:
@@ -153,13 +139,25 @@ class ClientHandler(threading.Thread):
                 commando = pickle.load(socket_to_client)
 
             elif commando == "GET_BY_DATE":
-                s1 = pickle.load(socket_to_client)  # SOM-object
-
-                data = self.between("date",s1["start_date"], s1["end_date"])
+                gegevens = pickle.load(socket_to_client)
+                data = self.between("date",gegevens["start_date"], gegevens["end_date"])
                 pickle.dump(data, socket_to_client)
                 socket_to_client.flush()
+
+                # Zoekopdracht formateren
+                zoekopdracht = f'Lanceringen tussen {gegevens["start_date"]} en {gegevens["end_date"]}'
+
+                # Zoekopdrachten opvragen
+                zoekopdrachten = ReadFromFile(zoekopdrachten_file)
+
+                # Zoekopdracht toeveoegen aan list
+                zoekopdrachten.append(zoekopdracht)
+                print(zoekopdrachten)               
+
+                # Scrijven naar zoekopdrachte file
+                WriteToFile(zoekopdrachten,zoekopdrachten_file)
+
                 commando = pickle.load(socket_to_client)
-                # saveSearches(commando)
 
             elif commando == "GET_BY_CLLIENT":
                 data = self.customer()    
@@ -171,8 +169,7 @@ class ClientHandler(threading.Thread):
             login_obj = Persoon(login['name'],login['nickname'],login['email'])
 
             # Gebruikersfile inlezen
-            read_obj = open(gebruikers_file, mode="rb")
-            gebruikers = pickle.load(read_obj)
+            gebruikers = ReadFromFile(gebruikers_file)
 
         # Controleren of gegevens al eens voorkomen in de dict via objecten
             for gebruiker in gebruikers:
