@@ -42,6 +42,14 @@ class ClientHandler(threading.Thread):
             read_obj = open(file, mode="rb")
             return pickle.load(read_obj)
 
+        def AddSearchToFile(zoekopdracht):
+            # Zoekopdrachten opvragen
+            zoekopdrachten = ReadFromFile(zoekopdrachten_file)
+            # Zoekopdracht toeveoegen aan list
+            zoekopdrachten.append(zoekopdracht)       
+            # Scrijven naar zoekopdrachte file
+            WriteToFile(zoekopdrachten,zoekopdrachten_file)
+
         same = False
         socket_to_client = self.socket_to_client.makefile(mode='rwb')
 
@@ -149,16 +157,10 @@ class ClientHandler(threading.Thread):
                 # Zoekopdracht formateren
                 zoekopdracht = f'Lanceringen tussen {gegevens["start_date"]} en {gegevens["end_date"]}'
 
-                # Zoekopdrachten opvragen
-                zoekopdrachten = ReadFromFile(zoekopdrachten_file)
+                # Zoekopdracht toeveoegen aan file
+                AddSearchToFile(zoekopdracht)
 
-                # Zoekopdracht toeveoegen aan list
-                zoekopdrachten.append(zoekopdracht)
-                print(zoekopdrachten)               
-
-                # Scrijven naar zoekopdrachte file
-                WriteToFile(zoekopdrachten,zoekopdrachten_file)
-
+                # Reset commando
                 commando = pickle.load(socket_to_client)
 
             elif commando == "FILL_COMBOBOX":
@@ -169,12 +171,16 @@ class ClientHandler(threading.Thread):
 
             elif commando == "GET_BY_CUSTOMER":
                 customer_name = pickle.load(socket_to_client) 
-                print(customer_name)
-                customer_name = customer_name["customer"]
-                print(customer_name)
                 result = df[df['Customer Name']== customer_name]
                 pickle.dump(result, socket_to_client)
                 socket_to_client.flush()
+
+                # Zoekopdracht formateren
+                zoekopdracht = f'Lanceringen in opdracht van {customer_name}'
+
+                # Zoekopdracht toeveoegen aan file
+                AddSearchToFile(zoekopdracht)
+
                 commando = pickle.load(socket_to_client)
 
             elif commando == "GET_GRAPH":
@@ -182,6 +188,8 @@ class ClientHandler(threading.Thread):
                 result = launch_year.to_dict()
                 pickle.dump(result, socket_to_client)
                 socket_to_client.flush()
+
+                
                 commando = pickle.load(socket_to_client)
 
 

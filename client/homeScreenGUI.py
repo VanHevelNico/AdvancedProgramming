@@ -101,7 +101,7 @@ class HomeScreenWindow(Frame):
             if code == "OK":
                 print("Ingelogd")
                 login = entry
-                os.system(f'python {dashboard_script}')
+                # os.system(f'python {dashboard_script}')
             elif code == "NOK":
                 self.errorLabel['text'] = "Er is geen account gevonden met deze inloggegevens"
             

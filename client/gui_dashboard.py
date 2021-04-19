@@ -93,9 +93,9 @@ class Dashboard(Frame):
         root = Tk()
         df1 = dataframe
         df1 = df1.transpose()
-        figure = Figure(figsize=(9,9))
+        figure = Figure(figsize=(15,6))
         ax = figure.subplots()
-        plot = sns.countplot(y='Customer Name', data=df1, ax=ax)
+        plot = sns.catplot(y="Customer Name",data=df1, kind="count", ax=ax)
         canvas = FigureCanvasTkAgg(figure, master=root)
         canvas.draw()
         canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
@@ -122,7 +122,7 @@ class Dashboard(Frame):
             self.lstOutput.delete(0, END)
             customer = self.comboCustomers.get()
             pickle.dump("GET_BY_CUSTOMER", self.in_out_server)  
-            entry = {"customer":customer}
+            entry = customer
             pickle.dump(entry, self.in_out_server)
             self.in_out_server.flush()
             
