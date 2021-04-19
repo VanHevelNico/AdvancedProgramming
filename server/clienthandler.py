@@ -67,11 +67,13 @@ class ClientHandler(threading.Thread):
                 commando = pickle.load(socket_to_client)
 
             elif commando == "INLOGGEN":
+                print("inlog sequentie geopend")
                 # Boolean om te controleren of objecten gelrijk zijn
                 same = False
 
                 # De doorgestuurde gegevens van client inlezen
                 gegevens = pickle.load(socket_to_client)
+                print(f"Doorgekregen gegevens: {gegevens}")
 
                 #Object maken van persoonsklasse voor in te loggen client
                 gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
@@ -85,18 +87,21 @@ class ClientHandler(threading.Thread):
                     gebruiker_obj = Persoon(gebruiker['name'],gebruiker['nickname'],gebruiker['email'])
                     if (gebruiker_obj == gegevens_obj) == True:
                         same = True
+                        print(same)
                         # Indien er een overeenkomst is
-                        if same == True:
-                            # Stuur OK naar client
-                            pickle.dump("OK", socket_to_client)
-                            socket_to_client.flush()
+                if same == True:
+                    print("OK")
+                    # Stuur OK naar client
+                    pickle.dump("OK", socket_to_client)
+                    socket_to_client.flush()
 
-                            # Noteren dat de gebruiker online is
-                            gebruiker['isonline'] = 1
-                        else:
-                            # NOK sturen naar client
-                            pickle.dump("NOK", socket_to_client)
-                            socket_to_client.flush()
+                    # Noteren dat de gebruiker online is
+                    gebruiker['isonline'] = 1
+                elif same == False:
+                    print("NOK")
+                    # NOK sturen naar client
+                    pickle.dump("NOK", socket_to_client)
+                    socket_to_client.flush()
 
                 #schrijven naar bestand
                 WriteToFile(gebruikers, gebruikers_file)
@@ -189,7 +194,7 @@ class ClientHandler(threading.Thread):
                 pickle.dump(result, socket_to_client)
                 socket_to_client.flush()
 
-                
+
                 commando = pickle.load(socket_to_client)
 
 
@@ -202,7 +207,7 @@ class ClientHandler(threading.Thread):
             # Gebruikersfile inlezen
             gebruikers = ReadFromFile(gebruikers_file)
 
-        # Controleren of gegevens al eens voorkomen in de dict via objecten
+            # Controleren of gegevens al eens voorkomen in de dict via objecten
             for gebruiker in gebruikers:
                 gebruiker_obj = Persoon(gebruiker['name'],gebruiker['nickname'],gebruiker['email'])
                 if (gebruiker_obj == login_obj) == True:
@@ -218,27 +223,9 @@ class ClientHandler(threading.Thread):
             print("------------------------- logout ------------------------- \n"+ str(gebruikers))
         
         # connectie sluiten
+        print("before close connection")
         self.print_bericht_gui_server("Connection with client closed...")
-        pickle.dump("CLOSE", socket_to_client)
         self.socket_to_client.close()
-
-    # def run(self):
-    #     socket_to_client = self.socket_to_client.makefile(mode='rwb')
-
-    #     self.print_bericht_gui_server("Waiting for numbers...")
-    #     commando = pickle.load(socket_to_client)
-    #     print(commando)
-
-    #     while commando != "CLOSE":
-    #         s1 = pickle.load(socket_to_client)  # SOM-object
-    #         s1.som = s1.getal1 + s1.getal2
-    #         pickle.dump(s1, socket_to_client)
-    #         socket_to_client.flush()
-
-    #         commando = pickle.load(socket_to_client)
-
-    #     self.print_bericht_gui_server("Connection with client closed...")
-    #     self.socket_to_client.close()
 
     def print_bericht_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")

@@ -7,7 +7,12 @@ sys.path[0] = str(Path(sys.path[0]).parent)
 
 from client.homeScreenGUI import HomeScreenWindow
 
+# win = Tk()
+# win.geometry("800x800")
+# app = HomeScreenWindow(win)
+# win.mainloop()
+
 win = Tk()
-win.geometry("800x800")
+# root.geometry("400x300")
 app = HomeScreenWindow(win)
 win.mainloop()
