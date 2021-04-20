@@ -67,13 +67,12 @@ class ClientHandler(threading.Thread):
                 commando = pickle.load(socket_to_client)
 
             elif commando == "INLOGGEN":
-                print("inlog sequentie geopend")
                 # Boolean om te controleren of objecten gelrijk zijn
                 same = False
 
                 # De doorgestuurde gegevens van client inlezen
                 gegevens = pickle.load(socket_to_client)
-                print(f"Doorgekregen gegevens: {gegevens}")
+                print(gegevens)
 
                 #Object maken van persoonsklasse voor in te loggen client
                 gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
@@ -87,22 +86,19 @@ class ClientHandler(threading.Thread):
                     gebruiker_obj = Persoon(gebruiker['name'],gebruiker['nickname'],gebruiker['email'])
                     if (gebruiker_obj == gegevens_obj) == True:
                         same = True
-                        print(same)
-                        # Indien er een overeenkomst is
+                        gebruiker['isonline'] = 1
+                # Indien er een overeenkomst is
                 if same == True:
                     print("OK")
                     # Stuur OK naar client
                     pickle.dump("OK", socket_to_client)
                     socket_to_client.flush()
-
-                    # Noteren dat de gebruiker online is
-                    gebruiker['isonline'] = 1
                 elif same == False:
                     print("NOK")
                     # NOK sturen naar client
                     pickle.dump("NOK", socket_to_client)
                     socket_to_client.flush()
-
+                print(gebruikers)
                 #schrijven naar bestand
                 WriteToFile(gebruikers, gebruikers_file)
 
@@ -153,17 +149,22 @@ class ClientHandler(threading.Thread):
 
                 commando = pickle.load(socket_to_client)
 
-            elif commando == "GET_BY_DATE":
+            elif commando == "BETWEEN":
+                soort = pickle.load(socket_to_client)
                 gegevens = pickle.load(socket_to_client)
-                data = self.between("date",gegevens["start_date"], gegevens["end_date"])
+                value1 = gegevens['value1']
+                value2 = gegevens['value2']
+
+                if soort == "DATE":
+                    # Zoekopdracht formateren
+                    zoekopdracht = f'Lanceringen tussen {value1} en {value2}'
+                    data = df[df["Launch Date"].between(value1,value2)]
+                elif soort == "CARGO":
+                    zoekopdracht = f'Lanceringen met een cargo tussen {value1}kg en {value2}kg'
+                    data = df[df["Payload Mass (kg)"].between(int(value1),int(value2))]
+                AddSearchToFile(zoekopdracht)
                 pickle.dump(data, socket_to_client)
                 socket_to_client.flush()
-
-                # Zoekopdracht formateren
-                zoekopdracht = f'Lanceringen tussen {gegevens["start_date"]} en {gegevens["end_date"]}'
-
-                # Zoekopdracht toeveoegen aan file
-                AddSearchToFile(zoekopdracht)
 
                 # Reset commando
                 commando = pickle.load(socket_to_client)
@@ -194,6 +195,13 @@ class ClientHandler(threading.Thread):
                 pickle.dump(result, socket_to_client)
                 socket_to_client.flush()
 
+                soort = pickle.load(socket_to_client)
+                # Zoekopdracht formateren
+                zoekopdracht = f'Grafiek van lanceringen per {soort}'
+                print(zoekopdracht)
+
+                # Zoekopdracht toeveoegen aan file
+                AddSearchToFile(zoekopdracht)
 
                 commando = pickle.load(socket_to_client)
 
@@ -230,13 +238,17 @@ class ClientHandler(threading.Thread):
     def print_bericht_gui_server(self, message):
         self.messages_queue.put(f"CLH {self.id}:> {message}")
 
-    def between(self,unit,start,end):
-        if unit == "date":
-            result = df[df["Launch Date"].between(start,end)]
-        elif unit == "weight":
-            result = df[df["Payload Mass (kg)"].between(start,end)]
+    # def between(self,unit,start,end):
+    #     if unit == "DATE":
+    #         # Zoekopdracht formateren
+    #         zoekopdracht = f'Lanceringen tussen {start} en {end}'
+    #         result = df[df["Launch Date"].between(start,end)]
 
-        return result
+    #     elif unit == "CARGO":
+    #         zoekopdracht = f'Lanceringen tussen {start}kg en {end}kg'
+    #         result = df[df["Payload Mass (kg)"].between(start,end)]
+    #     AddSearchToFile(zoekopdracht)
+    #     return result
 
     def customer(self,customer_name):
         result = df[df['Customer Name']== customer_name]

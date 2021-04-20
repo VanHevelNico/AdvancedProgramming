@@ -3,7 +3,8 @@ import sys
 from pathlib import Path
 sys.path[0] = str(Path(sys.path[0]).parent)
 folder = os.path.dirname(os.path.abspath(__file__))
-gebruikers_file = os.path.join(folder,'database/Gebruikers.txt')
+gebruikers_file = os.path.join(folder,'database/gebruikers.txt')
+zoekopdrachten_file = os.path.join(folder,'database/zoekopdrachten.txt')
 
 # https://pythonprogramming.net/python-3-tkinter-basics-tutorial/
 import logging
@@ -11,6 +12,8 @@ import socket
 from queue import Queue
 from threading import Thread
 from tkinter import *
+from collections import Counter
+import operator
 
 from server.server import SommenServer
 from server.gui_registered_users import RegisteredWindow
@@ -48,18 +51,18 @@ class ServerWindow(Frame):
 
         self.btn_text = StringVar()
         self.btn_text.set("Connected users")
-        self.buttonConnected = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
+        self.buttonConnected = Button(self, textvariable=self.btn_text, command=self.connectedUsers)
         self.buttonConnected.grid(row=3, column=0, sticky=W)
         # self.buttonConnected.pack(fill=)
 
         self.btn_text = StringVar()
         self.btn_text.set("All searches")
-        self.buttonSearches = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
+        self.buttonSearches = Button(self, textvariable=self.btn_text, command=self.searches)
         self.buttonSearches.grid(row=3, column=0)
 
         self.btn_text = StringVar()
         self.btn_text.set("Popular searches")
-        self.buttonPopular = Button(self, textvariable=self.btn_text, command=self.start_stop_server)
+        self.buttonPopular = Button(self, textvariable=self.btn_text, command=self.popularSearches)
         self.buttonPopular.grid(row=3, column=0, sticky=E)
 
         #, pady=(5, 5), padx=(5, 5), sticky=N + S + E + W
@@ -123,6 +126,7 @@ class ServerWindow(Frame):
             self.messages_queue.task_done()
             message = self.messages_queue.get()
 
+    def connectedUsers(self):
             #Online users
             reader = open(gebruikers_file,mode="rb")
             self.lstconnected.delete(0,END)
@@ -132,6 +136,34 @@ class ServerWindow(Frame):
                     userString = "Name: " + user['name'] + "   Nickname: " + user['nickname'] + "   Email: " + user['email']
                     self.lstconnected.insert(END,userString)
                     self.lstconnected.insert(END,"                                          --------------------------------------------------                                          ")
+
+    def searches(self):
+        print("Searches")
+        reader = open(zoekopdrachten_file,mode="rb")
+        zoekopdrachten = pickle.load(reader)
+        self.lstconnected.delete(0,END)
+        for zoekopdracht in zoekopdrachten:
+            self.lstconnected.insert(END,zoekopdracht)
+            self.lstconnected.insert(END,"                                          --------------------------------------------------                                          ")
+
+
+    def popularSearches(self):
+        self.lstconnected.delete(0,END)
+        popular_searches= []
+        print("Popular Searches")
+        reader = open(zoekopdrachten_file,mode="rb")
+        zoekopdrachten = pickle.load(reader)
+        counted_zoekopdrachten = str(Counter(zoekopdrachten))
+        counted_zoekopdrachten = counted_zoekopdrachten[8:-1]
+        counted_zoekopdrachten = eval(counted_zoekopdrachten)
+        print(counted_zoekopdrachten)
+        for zoekopdracht in counted_zoekopdrachten:
+            self.lstconnected.insert(END,f"Zoekopdracht:{zoekopdracht}           -            -            -   Aantal keer gezocht:{counted_zoekopdrachten[zoekopdracht]}")
+            self.lstconnected.insert(END,"-------------------------------------------------------------------------------------------------------------------------------------")
+
+        
+
+
 
 
 

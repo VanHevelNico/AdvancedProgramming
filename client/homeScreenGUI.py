@@ -48,16 +48,16 @@ class HomeScreenWindow(Frame):
         self.entry_email = Entry(self, width=40)
         self.entry_email.grid(row=3, columnspan= 2, sticky=E + W)
 
-        self.buttonLogin = Button(self, text="Login",command=self.buttonInloggen)
+        self.buttonLogin = Button(self, text="Login",command=self.login)
         self.buttonLogin.grid(row=4, sticky=E + W)
 
-        self.buttonRegister = Button(self, text="Registeren", command=self.buttonRegistreren)
+        self.buttonRegister = Button(self, text="Registeren", command=self.register)
         self.buttonRegister.grid(row=4,column=1, sticky=E + W)
 
         self.errorLabel = Label(self, text="")
         self.errorLabel.grid(row=8)
 
-        self.buttonClose = Button(self, text="Sluiten", command=self.buttonSluiten)
+        self.buttonClose = Button(self, text="Sluiten", command=self.logout)
         self.buttonClose.grid(row=8,column=1, sticky=E + W)
 
         Grid.rowconfigure(self, 12, weight=2)
@@ -83,12 +83,12 @@ class HomeScreenWindow(Frame):
             logging.error(f"Foutmelding: {ex}")
             messagebox.showinfo("Stopafstand - foutmelding", "Something has gone wrong...")
 
-    def buttonSluiten(self):
+    def logout(self):
         print("CloseConnection aanroepen")
         self.close_connection()
         # root.destroy()
 
-    def buttonInloggen(self):
+    def login(self):
         global login
         try:
             print("inloggen")
@@ -126,16 +126,16 @@ class HomeScreenWindow(Frame):
                 self.entry_end = Entry(self)
                 self.entry_end.grid(row=10, column=1)
 
-                self.buttonOrderByDate = Button(self, text="Get launches between given dates", command=self.orderedByDate)
-                self.buttonOrderByDate.grid(row=11, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
+                self.buttonBetween = Button(self, text="Get launches between given dates", command=self.launchesBetween)
+                self.buttonBetween.grid(row=11, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
-                self.buttonGetByCustomer = Button(self, text="Get launches by customer", command=self.orderedByCustomer)
+                self.buttonGetByCustomer = Button(self, text="Get launches by customer", command=self.launchesByCustomer)
                 self.buttonGetByCustomer.grid(row=12, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
-                self.buttonGetByCustomer = Button(self, text="Show launch year grah", command=self.graphLaunchYear)
+                self.buttonGetByCustomer = Button(self, text="Show launch year graph", command=self.graphLaunchYear)
                 self.buttonGetByCustomer.grid(row=13, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
-                self.buttonGetByCustomer = Button(self, text="Show customers grah", command=self.graphCustomer)
+                self.buttonGetByCustomer = Button(self, text="Show customers graph", command=self.graphCustomer)
                 self.buttonGetByCustomer.grid(row=14, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
                 Label(self, text="Output:").grid(row=15)
@@ -154,7 +154,7 @@ class HomeScreenWindow(Frame):
             logging.error(f"Foutmelding: {ex}")
             messagebox.showinfo("Inloggen", "Something has gone wrong...")
 
-    def buttonRegistreren(self):
+    def register(self):
         try:
             print("registreren")
 
@@ -210,7 +210,12 @@ class HomeScreenWindow(Frame):
         canvas.draw()
         canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
 
+        pickle.dump("YEAR", self.in_out_server)
+        self.in_out_server.flush()
+
         root.mainloop()
+
+
 
     def graphCustomer(self):
         pickle.dump("GET_GRAPH", self.in_out_server)
@@ -226,6 +231,9 @@ class HomeScreenWindow(Frame):
         canvas = FigureCanvasTkAgg(figure, master=root)
         canvas.draw()
         canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+
+        pickle.dump("CUSTOMER", self.in_out_server)
+        self.in_out_server.flush()
 
         root.mainloop()
 
@@ -244,7 +252,7 @@ class HomeScreenWindow(Frame):
             logging.error(f"Foutmelding: {ex}")
             messagebox.showinfo("Sommen", "Something has gone wrong...")
 
-    def orderedByCustomer(self):
+    def launchesByCustomer(self):
         try:
             self.lstOutput.delete(0, END)
             customer = self.comboCustomers.get()
@@ -281,15 +289,23 @@ class HomeScreenWindow(Frame):
         except Exception as ex:
             logging.error(f"Foutmelding: {ex}")
 
-    def orderedByDate(self):
+    def launchesBetween(self):
         try:
             self.lstOutput.delete(0, END)
-            pickle.dump("GET_BY_DATE", self.in_out_server)
+            pickle.dump("BETWEEN", self.in_out_server)
+            self.in_out_server.flush()
 
-            start_date = str(self.entry_begin.get())
-            end_date = str(self.entry_end.get())
-    
-            entry = {"start_date":start_date, "end_date":end_date}
+            value1 = str(self.entry_begin.get())
+            value2 = str(self.entry_end.get())
+            both = value1+value2
+
+            entry = {"value1":value1, "value2":value2}
+
+            if any(not c.isnumeric() for c in both):
+                pickle.dump("DATE", self.in_out_server)
+            else:
+                pickle.dump("CARGO", self.in_out_server)
+            self.in_out_server.flush()
             pickle.dump(entry, self.in_out_server)
             self.in_out_server.flush()
             
