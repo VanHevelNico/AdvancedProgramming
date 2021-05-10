@@ -55,7 +55,6 @@ class ClientHandler(threading.Thread):
 
         self.print_bericht_gui_server("Waiting for command...")
         commando = pickle.load(socket_to_client)
-        print(commando)
 
         while commando != "CLOSE":
             if commando == "SOM":
@@ -72,7 +71,6 @@ class ClientHandler(threading.Thread):
 
                 # De doorgestuurde gegevens van client inlezen
                 gegevens = pickle.load(socket_to_client)
-                print(gegevens)
 
                 #Object maken van persoonsklasse voor in te loggen client
                 gegevens_obj = Persoon(gegevens['name'],gegevens['nickname'],gegevens['email'])
@@ -89,16 +87,14 @@ class ClientHandler(threading.Thread):
                         gebruiker['isonline'] = 1
                 # Indien er een overeenkomst is
                 if same == True:
-                    print("OK")
                     # Stuur OK naar client
                     pickle.dump("OK", socket_to_client)
                     socket_to_client.flush()
                 elif same == False:
-                    print("NOK")
                     # NOK sturen naar client
                     pickle.dump("NOK", socket_to_client)
                     socket_to_client.flush()
-                print(gebruikers)
+
                 #schrijven naar bestand
                 WriteToFile(gebruikers, gebruikers_file)
 
@@ -198,7 +194,6 @@ class ClientHandler(threading.Thread):
                 soort = pickle.load(socket_to_client)
                 # Zoekopdracht formateren
                 zoekopdracht = f'Grafiek van lanceringen per {soort}'
-                print(zoekopdracht)
 
                 # Zoekopdracht toeveoegen aan file
                 AddSearchToFile(zoekopdracht)
@@ -208,7 +203,6 @@ class ClientHandler(threading.Thread):
 
         # Ggevens opvangen
         login = pickle.load(socket_to_client)
-        print(login)
         if login != "NOLOGIN":
             login_obj = Persoon(login['name'],login['nickname'],login['email'])
 
@@ -221,17 +215,12 @@ class ClientHandler(threading.Thread):
                 if (gebruiker_obj == login_obj) == True:
                     same = True
                     if same == True:
-                        print(gebruiker)
-                        print("same")
                         gebruiker["isonline"] = 0
 
             #schrijven naar bestand
             WriteToFile(gebruikers,gebruikers_file)
-
-            print("------------------------- logout ------------------------- \n"+ str(gebruikers))
         
         # connectie sluiten
-        print("before close connection")
         self.print_bericht_gui_server("Connection with client closed...")
         self.socket_to_client.close()
 

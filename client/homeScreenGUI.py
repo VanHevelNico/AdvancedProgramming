@@ -36,29 +36,29 @@ class HomeScreenWindow(Frame):
         self.master.title("User GUI")
         self.pack( expand=1)
 
-        Label(self, text="Naam").grid(row=0, sticky=W)
+        self.buttonClose = Button(self, text="Sluiten", command=self.logout)
+        self.buttonClose.grid(row=0,column=2, sticky=E + W)
+
+        Label(self, text="Naam").grid(row=1, sticky=W)
         self.entry_name = Entry(self, width=40)
-        self.entry_name.grid(row=1)
+        self.entry_name.grid(row=2)
         
-        Label(self, text="Nickname").grid(row=0,column=1, sticky=W)
+        Label(self, text="Nickname").grid(row=1,column=1, sticky=W)
         self.entry_nickname = Entry(self, width=40)
-        self.entry_nickname.grid(row=1, column=1)
+        self.entry_nickname.grid(row=2, column=1)
                 
-        Label(self, text="Email").grid(row=2, sticky=W)
+        Label(self, text="Email").grid(row=3, sticky=W)
         self.entry_email = Entry(self, width=40)
-        self.entry_email.grid(row=3, columnspan= 2, sticky=E + W)
+        self.entry_email.grid(row=4, columnspan= 2, sticky=E + W)
 
         self.buttonLogin = Button(self, text="Login",command=self.login)
-        self.buttonLogin.grid(row=4, sticky=E + W)
+        self.buttonLogin.grid(row=5, sticky=E + W)
 
         self.buttonRegister = Button(self, text="Registeren", command=self.register)
-        self.buttonRegister.grid(row=4,column=1, sticky=E + W)
+        self.buttonRegister.grid(row=5,column=1, sticky=E + W)
 
         self.errorLabel = Label(self, text="")
         self.errorLabel.grid(row=8)
-
-        self.buttonClose = Button(self, text="Sluiten", command=self.logout)
-        self.buttonClose.grid(row=8,column=1, sticky=E + W)
 
         Grid.rowconfigure(self, 12, weight=2)
         Grid.columnconfigure(self, 10, weight=1)
@@ -84,14 +84,14 @@ class HomeScreenWindow(Frame):
             messagebox.showinfo("Stopafstand - foutmelding", "Something has gone wrong...")
 
     def logout(self):
-        print("CloseConnection aanroepen")
+        logging.info("CloseConnection aanroepen")
         self.close_connection()
         # root.destroy()
 
     def login(self):
         global login
         try:
-            print("inloggen")
+            logging.info("Trying to log in")
 
             # Errorbox leegmaken
             self.errorLabel['text'] = ""
@@ -108,25 +108,25 @@ class HomeScreenWindow(Frame):
             # Deze dictionary naar de server
             pickle.dump(entry, self.in_out_server)
             self.in_out_server.flush()
-            print(f"doorgestuurde berivht: {str(entry)}")
+            logging.info("Sent login request to server and waiting for answer")
                     
             # resultaat afwachten
-            print(f"Wachten op antwoord")
             code = pickle.load(self.in_out_server)
             print(code)
             if code == "OK":
-                print("Ingelogd")
+                logging.info("Login accepted")
                 login = entry
 
-                Label(self, text="Begin date: format yyyy-mm-dd").grid(row=9, column=0)
-                Label(self, text="End date: format yyyy-mm-dd", pady=10).grid(row=9, column=1)
+
+                Label(self, text="Value 1: format yyyy-mm-dd or decimal").grid(row=9, column=0)
+                Label(self, text="Value 2: format yyyy-mm-dd or decimal", pady=10).grid(row=9, column=1)
 
                 self.entry_begin = Entry(self)
                 self.entry_begin.grid(row=10, column=0)
                 self.entry_end = Entry(self)
                 self.entry_end.grid(row=10, column=1)
 
-                self.buttonBetween = Button(self, text="Get launches between given dates", command=self.launchesBetween)
+                self.buttonBetween = Button(self, text="Get launches (with payload) between value 1 and value 2", command=self.launchesBetween)
                 self.buttonBetween.grid(row=11, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
                 self.buttonGetByCustomer = Button(self, text="Get launches by customer", command=self.launchesByCustomer)
@@ -138,7 +138,7 @@ class HomeScreenWindow(Frame):
                 self.buttonGetByCustomer = Button(self, text="Show customers graph", command=self.graphCustomer)
                 self.buttonGetByCustomer.grid(row=14, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
-                Label(self, text="Output:").grid(row=15)
+                Label(self, text="Output:").grid(row=15, sticky= W)
                 self.scrollbar = Scrollbar(self, orient=VERTICAL)
                 self.lstOutput = Listbox(self, yscrollcommand=self.scrollbar.set)
                 self.scrollbar.config(command=self.lstOutput.yview)
@@ -146,8 +146,8 @@ class HomeScreenWindow(Frame):
                 self.lstOutput.grid(row=16, column=0, columnspan=2,  sticky=N + S + E + W)
                 self.scrollbar.grid(row=16, column=0, sticky=N + S) 
 
-                # os.system(f'python {dashboard_script}')
             elif code == "NOK":
+                logging.info("Login not accepted")
                 self.errorLabel['text'] = "Er is geen account gevonden met deze inloggegevens"
             
         except Exception as ex:
@@ -156,7 +156,7 @@ class HomeScreenWindow(Frame):
 
     def register(self):
         try:
-            print("registreren")
+            logging.info("Trying to register")
 
             # Errorbox leegmaken
             self.errorLabel['text'] = ""
@@ -169,7 +169,7 @@ class HomeScreenWindow(Frame):
             # regex van een email
             regex = '^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,3}$'
 
-            # Checken of ingegeven woorden voldoen aan de eisen
+            # Checken of ingegeven naam voldoen aan de eisen
             if any(not c.isalpha() for c in naam):
                 self.errorLabel['text'] = "De ingegeven naam bevat speciale tekens"
             else:
@@ -227,7 +227,7 @@ class HomeScreenWindow(Frame):
         df1 = df1.transpose()
         figure = Figure(figsize=(15,6))
         ax = figure.subplots()
-        plot = sns.catplot(y="Customer Name",data=df1, kind="count", ax=ax)
+        plot = sns.catplot(y="Customer Name",data=df1, kind="count")
         canvas = FigureCanvasTkAgg(figure, master=root)
         canvas.draw()
         canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
@@ -263,9 +263,7 @@ class HomeScreenWindow(Frame):
             
             # resultaat afwachten
             result = pickle.load(self.in_out_server)
-            print(result)
             result = result.to_dict()
-            print(result)
             teller = 0
             value = ""
             count = result['Flight Number']
@@ -312,7 +310,6 @@ class HomeScreenWindow(Frame):
             # resultaat afwachten
             result = pickle.load(self.in_out_server)
             result = result.to_dict()
-            print(result)
             teller = 0
             value = ""
             count = result['Flight Number']
@@ -338,25 +335,22 @@ class HomeScreenWindow(Frame):
             messagebox.showinfo("Sommen", "Something has gone wrong...")
 
     def close_connection(self):
-        print("close connection funct started")
+        logging.info("Closing connection")
         global login
         try:
             pickle.dump("CLOSE", self.in_out_server)
             if len(login)==0:
                 pickle.dump("NOLOGIN", self.in_out_server)
-                print("Nologin")
                 self.in_out_server.flush()
                 logging.info("Close connection with server...")
-                print("close")
                 self.socket_to_server.close()
             else:
                 pickle.dump(login, self.in_out_server)
                 self.in_out_server.flush()
-                print("waiting for response")
                 logging.info("Close connection with server...")
                 self.socket_to_server.close()     
         except:
-            logging.error("Foutmelding:close connection with server failed")
+            logging.error("Foutmelding: close connection with server failed")
 
 
 logging.basicConfig(level=logging.INFO)
