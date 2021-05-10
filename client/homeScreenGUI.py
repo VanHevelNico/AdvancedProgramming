@@ -68,6 +68,22 @@ class HomeScreenWindow(Frame):
     #     print("CloseConnection aanroepen")
     #     self.close_connection()  
 
+    def fillCombobox(self):
+        try:
+            logging.info("Getting data from server to fill combobox")
+            pickle.dump("FILL_COMBOBOX", self.in_out_server)
+            self.in_out_server.flush()
+            
+            # resultaat afwachten
+            result = pickle.load(self.in_out_server)
+            result = result.tolist()
+            self.comboCustomers = Combobox(self,values=result)
+            self.comboCustomers.grid(row=12, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
+
+        except Exception as ex:
+            logging.error(f"Foutmelding: {ex}")
+            messagebox.showinfo("Sommen", "Something has gone wrong...")
+
     def makeConnnectionWithServer(self):
         try:
             logging.info("Making connection with server...")
@@ -130,21 +146,24 @@ class HomeScreenWindow(Frame):
                 self.buttonBetween.grid(row=11, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
                 self.buttonGetByCustomer = Button(self, text="Get launches by customer", command=self.launchesByCustomer)
-                self.buttonGetByCustomer.grid(row=12, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
-
-                self.buttonGetByCustomer = Button(self, text="Show launch year graph", command=self.graphLaunchYear)
                 self.buttonGetByCustomer.grid(row=13, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
-                self.buttonGetByCustomer = Button(self, text="Show customers graph", command=self.graphCustomer)
+                self.buttonGetByCustomer = Button(self, text="Show launch year graph", command=self.graphLaunchYear)
                 self.buttonGetByCustomer.grid(row=14, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
 
-                Label(self, text="Output:").grid(row=15, sticky= W)
+                self.buttonGetByCustomer = Button(self, text="Show customers graph", command=self.graphCustomer)
+                self.buttonGetByCustomer.grid(row=15, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
+
+                Label(self, text="Output:").grid(row=16, sticky= W)
                 self.scrollbar = Scrollbar(self, orient=VERTICAL)
+                #self.scrollbarHorizontal = Scrollbar(self, orient=HORIZONTAL)
                 self.lstOutput = Listbox(self, yscrollcommand=self.scrollbar.set)
                 self.scrollbar.config(command=self.lstOutput.yview)
 
-                self.lstOutput.grid(row=16, column=0, columnspan=2,  sticky=N + S + E + W)
-                self.scrollbar.grid(row=16, column=0, sticky=N + S) 
+                self.lstOutput.grid(row=17, column=0, columnspan=2,  sticky=N + S + E + W)
+                self.scrollbar.grid(row=17, column=0, sticky=N + S) 
+                
+                self.fillCombobox()
 
             elif code == "NOK":
                 logging.info("Login not accepted")
@@ -199,7 +218,7 @@ class HomeScreenWindow(Frame):
             messagebox.showinfo("Registreren", "Something has gone wrong...")
 
     def graphLaunchYear(self):
-        logging.inf("Getting launch year graph")
+        logging.info("Getting launch year graph")
         pickle.dump("GET_GRAPH", self.in_out_server)
         self.in_out_server.flush()
         result = pickle.load(self.in_out_server)
@@ -230,7 +249,7 @@ class HomeScreenWindow(Frame):
         df1 = df1.transpose()
         figure = Figure(figsize=(15,6))
         ax = figure.subplots()
-        plot = sns.catplot(y="Customer Name",data=df1, kind="count")
+        plot = sns.countplot(y="Customer Name",data=df1, ax=ax)
         canvas = FigureCanvasTkAgg(figure, master=root)
         canvas.draw()
         canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
@@ -240,21 +259,6 @@ class HomeScreenWindow(Frame):
 
         root.mainloop()
 
-    def fillCombobox(self):
-        try:
-            logging.info("Getting data from server to fill combobox")
-            pickle.dump("FILL_COMBOBOX", self.in_out_server)
-            self.in_out_server.flush()
-            
-            # resultaat afwachten
-            result = pickle.load(self.in_out_server)
-            result = result.tolist()
-            self.comboCustomers = Combobox(self,values=result)
-            self.comboCustomers.grid(row=4, column=0, columnspan=2, pady=(0, 5), padx=(5, 5), sticky=N + S + E + W)
-
-        except Exception as ex:
-            logging.error(f"Foutmelding: {ex}")
-            messagebox.showinfo("Sommen", "Something has gone wrong...")
 
     def launchesByCustomer(self):
         try:

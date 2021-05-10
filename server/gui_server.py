@@ -70,7 +70,7 @@ class ServerWindow(Frame):
         
         self.scrollbar = Scrollbar(self, orient=VERTICAL)
         self.lstconnected = Listbox(self, yscrollcommand=self.scrollbar.set)
-        self.scrollbar.config(command=self.lstconnected.yview)
+        self.scrollbar.config(command=self.lstconnected.yview)#564372222222222
 
         self.lstconnected.grid(row=4, column=0, sticky=N + S + E + W)
         self.scrollbar.grid(row=4, column=1, sticky=N + S)
