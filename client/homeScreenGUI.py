@@ -33,6 +33,7 @@ class HomeScreenWindow(Frame):
         self.makeConnnectionWithServer()
 
     def init_window(self):
+        logging.info("Starting user GUI")
         self.master.title("User GUI")
         self.pack( expand=1)
 
@@ -81,7 +82,7 @@ class HomeScreenWindow(Frame):
             logging.info("Open connection with server succesfully")
         except Exception as ex:
             logging.error(f"Foutmelding: {ex}")
-            messagebox.showinfo("Stopafstand - foutmelding", "Something has gone wrong...")
+            messagebox.showinfo("Fout!", "Something has gone wrong...")
 
     def logout(self):
         logging.info("CloseConnection aanroepen")
@@ -112,7 +113,6 @@ class HomeScreenWindow(Frame):
                     
             # resultaat afwachten
             code = pickle.load(self.in_out_server)
-            print(code)
             if code == "OK":
                 logging.info("Login accepted")
                 login = entry
@@ -149,7 +149,8 @@ class HomeScreenWindow(Frame):
             elif code == "NOK":
                 logging.info("Login not accepted")
                 self.errorLabel['text'] = "Er is geen account gevonden met deze inloggegevens"
-            
+                logging.error("Er is geen account gevonden met deze inloggegevens")
+
         except Exception as ex:
             logging.error(f"Foutmelding: {ex}")
             messagebox.showinfo("Inloggen", "Something has gone wrong...")
@@ -172,6 +173,7 @@ class HomeScreenWindow(Frame):
             # Checken of ingegeven naam voldoen aan de eisen
             if any(not c.isalpha() for c in naam):
                 self.errorLabel['text'] = "De ingegeven naam bevat speciale tekens"
+                logging.error("De ingegeven naam bevat niet speciale tekens")
             else:
                 if (re.search(regex, email)):
 
@@ -190,12 +192,14 @@ class HomeScreenWindow(Frame):
                     self.errorLabel['text'] = code
                 else:
                     self.errorLabel['text'] = "Het ingegeven e-mailadres is ongeldig"
+                    logging.error("Het ingegeven e-mailadres is ongeldig")
 
         except Exception as ex:
             logging.error(f"Foutmelding: {ex}")
             messagebox.showinfo("Registreren", "Something has gone wrong...")
 
     def graphLaunchYear(self):
+        logging.inf("Getting launch year graph")
         pickle.dump("GET_GRAPH", self.in_out_server)
         self.in_out_server.flush()
         result = pickle.load(self.in_out_server)
@@ -215,9 +219,8 @@ class HomeScreenWindow(Frame):
 
         root.mainloop()
 
-
-
     def graphCustomer(self):
+        logging.info("Get customer graph")
         pickle.dump("GET_GRAPH", self.in_out_server)
         self.in_out_server.flush()
         result = pickle.load(self.in_out_server)
@@ -239,6 +242,7 @@ class HomeScreenWindow(Frame):
 
     def fillCombobox(self):
         try:
+            logging.info("Getting data from server to fill combobox")
             pickle.dump("FILL_COMBOBOX", self.in_out_server)
             self.in_out_server.flush()
             
@@ -254,6 +258,7 @@ class HomeScreenWindow(Frame):
 
     def launchesByCustomer(self):
         try:
+            logging.info("Getting launchers by customer")
             self.lstOutput.delete(0, END)
             customer = self.comboCustomers.get()
             pickle.dump("GET_BY_CUSTOMER", self.in_out_server)  
@@ -289,6 +294,7 @@ class HomeScreenWindow(Frame):
 
     def launchesBetween(self):
         try:
+            logging.info("Getting launchers between dates")
             self.lstOutput.delete(0, END)
             pickle.dump("BETWEEN", self.in_out_server)
             self.in_out_server.flush()
